@@ -1,0 +1,11 @@
+/sync
+<blockquote>同步 Pixiv 收藏夹，无参数。</blockquote>
+/meta
+<blockquote>更新元数据，可以用参数指定更新范围，offset 指的是 Pixiv 收藏夹中指定作品相对于最新收藏的作品的偏移。
+🟡 <code>/meta [offset1] [offset2]</code>
+<blockquote><em>其中 offset1 小于 offset2，即 offset1 相比 offset2 是后来才收藏的；如果 offset 为字母 n，意味着该 offset 取最小或最大值。</em></blockquote>
+🟡 <code>/meta [offset2]</code>
+<blockquote><em>从最新收藏（即 offset1 == 0）更新到 offset2。</em></blockquote>
+🟡 <code>/meta</code>
+<blockquote><em>无参数，更新最新的100个收藏。</em></blockquote>
+</blockquote>

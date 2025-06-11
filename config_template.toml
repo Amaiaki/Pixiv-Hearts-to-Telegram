@@ -1,0 +1,19 @@
+[pixiv]
+userID = 5555555            #待填写
+headers.User-Agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36'
+headers.Cookie = ''         #待填写
+
+[telegram]
+botToken = ''               #待填写
+allowedUsers = [6666666]    #待填写
+#channelCatalogMsgID = 247  #存档频道的目录，可以自动创建，或者手动创建并填写
+[telegram.archiveChatIDs]
+channel = -1008888888       #待填写，-100开头
+group = -1009999999         #待填写，-100开头
+dustbin = -1007777777       #待填写，-100开头
+
+[paths]
+artworkSave = './收藏'
+metadataFile = './metadata.csv'
+helpInfoFile = 'help.html'
+logFile = 'pxh2tg.log'
