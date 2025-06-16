@@ -1,5 +1,4 @@
 import os
-import re
 import ast
 import time
 import shutil
@@ -108,17 +107,14 @@ class TelegramUploader:
                 to_photoshape=self.MAX_COVER_PHOTO_SHAPE,
             )
             # 发送测试消息，获取讨论群在发送封面前的最新message_id
-            group_msg_before_cover = auto_retry(self.bot.send_message, (self.GROUP_ID, '.'))
-            auto_retry(self.bot.delete_message, (self.GROUP_ID, group_msg_before_cover.id))
+            group_msg_before_cover: Message = auto_retry(self.bot.send_message)(self.GROUP_ID, '.')
+            auto_retry(self.bot.delete_message)(self.GROUP_ID, group_msg_before_cover.id)
             # 发送封面和元数据
             with open(file_path, 'rb') as pic:
                 caption = self.gen_artwork_caption(**row.to_dict())
                 # 发送封面，此后报错将需要立刻删除封面
-                chan_msg = auto_retry(
-                    self.bot.send_photo,
-                    (self.CHANNEL_ID, pic, caption),
-                    dict(parse_mode='HTML'),
-                )
+                chan_msg: Message = auto_retry(self.bot.send_photo)(
+                    self.CHANNEL_ID, pic, caption, parse_mode='HTML')
                 meta_df.at[like_order, 'channelMessageId'] = chan_msg.id
             
             try:
@@ -126,9 +122,9 @@ class TelegramUploader:
                 # 先找出与频道消息对应的讨论组消息，最多尝试max_tries次寻找消息
                 for _ in range(max_tries):
                     time.sleep(gap_time)
-                    for id in range(group_msg_before_cover.id+1, group_msg_before_cover.id+5):
+                    for id in range(group_msg_before_cover.id + 1, group_msg_before_cover.id + 5):
                         try:
-                            test_msg = self.get_message_content(self.GROUP_ID, id)
+                            test_msg = self.get_message_content(self.GROUP_ID, id, max_tries=2)
                             if (str(test_msg.forward_from_chat.id) == str(self.CHANNEL_ID) 
                                 and test_msg.forward_from_message_id == chan_msg.id):
                                 group_msg_id = id
@@ -154,15 +150,12 @@ class TelegramUploader:
                         for filename in os.listdir(zip_folder):
                             file_path = os.path.join(zip_folder, filename)
                             with open(file_path, 'rb') as file:
-                                page_msg = auto_retry(
-                                    self.bot.send_document, 
-                                    (self.GROUP_ID, file, group_msg_id),
-                                )
+                                page_msg = auto_retry(self.bot.send_document)(self.GROUP_ID, file, group_msg_id)
                                 time.sleep(gap_time / 2)
                         shutil.rmtree(zip_folder)
                     else:
                         with open(file_path, 'rb') as pic:
-                            page_msg = auto_retry(self.bot.send_document, (self.GROUP_ID, pic, group_msg_id))
+                            page_msg = auto_retry(self.bot.send_document)(self.GROUP_ID, pic, group_msg_id)
                             time.sleep(gap_time / 2)
                     # 记录图片文件在讨论群中的message_id
                     meta_df['documentGroupMessageIdList'][like_order].append(page_msg.id)
@@ -179,7 +172,7 @@ class TelegramUploader:
             
             except Exception as e:
                 # 删除封面
-                auto_retry(self.bot.delete_message, (self.CHANNEL_ID, chan_msg.id))
+                auto_retry(self.bot.delete_message)(self.CHANNEL_ID, chan_msg.id)
                 # 清空此作品消息相关的元数据
                 meta_df.loc[like_order, ['channelMessageId', 'groupMessageId']] = -1
                 meta_df.at[like_order, 'documentGroupMessageIdList'] = '[]'
@@ -191,7 +184,7 @@ class TelegramUploader:
         
         # 保存元数据、取消群组的所有置顶
         meta_df.to_csv(self.METADATA_FILEPATH, index=False)
-        auto_retry(self.bot.unpin_all_chat_messages, (self.GROUP_ID,))
+        auto_retry(self.bot.unpin_all_chat_messages)(self.GROUP_ID)
     
 
     def update_metadata_and_related_message(
@@ -225,9 +218,8 @@ class TelegramUploader:
         feedback_msg_list = []
         feedback_text = f'正在更新元数据……\n本次更新作品数量：{end_offset - start_offset}'
         for chat_id in feedback_chat_ids:
-            feedback_msg_list.append(auto_retry(
-                self.bot.send_message,
-                (chat_id, feedback_text + f'\n起始更新收藏序号：NaN\n当前更新收藏序号：NaN\n进度：0%'),
+            feedback_msg_list.append(auto_retry(self.bot.send_message)(
+                chat_id, feedback_text + f'\n起始更新收藏序号：NaN\n当前更新收藏序号：NaN\n进度：0%'
             ))
         
         # 更新作品信息
@@ -271,11 +263,11 @@ class TelegramUploader:
             meta_df['existence'] = True
         
         for msg in feedback_msg_list:
-            auto_retry(
-                self.bot.edit_message_text,
-                (feedback_text + f"\n{len(different_indices)} 个作品存活状态改变。", msg.chat.id, msg.id),
-                dict(parse_mode='HTML'),
+            auto_retry(self.bot.edit_message_text)(
+                feedback_text + f"\n{len(different_indices)} 个作品存活状态改变。", 
+                msg.chat.id, msg.id, parse_mode='HTML'
             )
+        
         if not different_indices:
             return True
         
@@ -294,11 +286,9 @@ class TelegramUploader:
             # 反馈消息
             status_feedback += f"\n<code>{row['id']}</code> {'存活' if exist_statuses[i] else '被删除'}"
             for msg in feedback_msg_list:
-                auto_retry(
-                    self.bot.edit_message_text,
-                    (feedback_text + f"\n正在更新：{status_feedback}", 
-                    msg.chat.id, msg.id),
-                    dict(parse_mode='HTML'),
+                auto_retry(self.bot.edit_message_text)(
+                    feedback_text + f"\n正在更新：{status_feedback}", 
+                    msg.chat.id, msg.id, parse_mode='HTML',
                 )
             
             # 跳过未记录的被删除的作品
@@ -308,10 +298,9 @@ class TelegramUploader:
             # 更新频道消息中的存活状态
             caption = self.gen_artwork_caption(**row.to_dict())
             try:
-                auto_retry(
-                    self.bot.edit_message_caption, 
-                    (caption, self.CHANNEL_ID, row['channelMessageId']),
-                    dict(parse_mode='HTML'),
+                auto_retry(self.bot.edit_message_caption)(
+                    caption, self.CHANNEL_ID, row['channelMessageId'], 
+                    parse_mode='HTML',
                 )
             except Exception as e:
                 raise MessageSendingError(
@@ -319,11 +308,9 @@ class TelegramUploader:
             time.sleep(gap_time)
         
         for msg in feedback_msg_list:
-            auto_retry(
-                self.bot.edit_message_text,
-                (feedback_text + f"\n更新完成：{status_feedback}", 
-                msg.chat.id, msg.id),
-                dict(parse_mode='HTML'),
+            auto_retry(self.bot.edit_message_text)(
+                feedback_text + f"\n更新完成：{status_feedback}", 
+                msg.chat.id, msg.id, parse_mode='HTML',
             )
         meta_df.to_csv(self.METADATA_FILEPATH, index=False)
         return True
@@ -365,11 +352,10 @@ class TelegramUploader:
         like_order = 'NaN'
 
         for offset in range(start_offset, end_offset, pace):
-            resp = auto_retry(
-                requests.get,
-                (f"https://www.pixiv.net/ajax/user/{self.PIXIV_USER_ID}/illusts/" + \
-                    f"bookmarks?tag=&offset={offset}&limit={pace}&rest=show",), 
-                dict(headers=self.HEADERS, timeout=timeout, proxies=self.PROXIES),
+            resp = auto_retry(requests.get)(
+                f"https://www.pixiv.net/ajax/user/{self.PIXIV_USER_ID}/illusts/" + \
+                    f"bookmarks?tag=&offset={offset}&limit={pace}&rest=show", 
+                headers=self.HEADERS, timeout=timeout, proxies=self.PROXIES,
             ).json()
             datas = resp["body"]["works"]
             bookmark_tags: dict = resp["body"].get("bookmarkTags", dict())
@@ -418,11 +404,8 @@ class TelegramUploader:
                             row = meta_df.loc[id]
                             caption = self.gen_artwork_caption(**row.to_dict())
                             try:
-                                auto_retry(
-                                    self.bot.edit_message_caption,
-                                    (caption, self.CHANNEL_ID, row['channelMessageId']),
-                                    dict(parse_mode='HTML'),
-                                )
+                                auto_retry(self.bot.edit_message_caption)(
+                                    caption, self.CHANNEL_ID, row['channelMessageId'], parse_mode='HTML')
                             except Exception as e:
                                 raise MessageSendingError(
                                     f"更新作品频道消息时出现错误，消息id为 ({row['channelMessageId']}): \n{e}\n")
@@ -440,11 +423,9 @@ class TelegramUploader:
                 progress_info = f"\n起始更新收藏序号：NaN" if like_order == 'NaN' else ''
                 progress_info += f"\n当前更新收藏序号：{like_order}" +\
                     f"\n进度：{100*progress/num_updates:.2f}%"
-                auto_retry(
-                    self.bot.edit_message_text,
-                    (feedback_text + progress_info if progress < num_updates else feedback_text,
-                        msg.chat.id, msg.id,),
-                    dict(parse_mode='HTML'),
+                auto_retry(self.bot.edit_message_text)(
+                    feedback_text + progress_info if progress < num_updates else feedback_text,
+                    msg.chat.id, msg.id, parse_mode='HTML',
                 )
             meta_df.to_csv(self.METADATA_FILEPATH, index=False)
 
@@ -461,15 +442,8 @@ class TelegramUploader:
 
     def set_channel_catalog_message(self):
         if self.CHANNEL_CATALOG_MSG_ID is None:
-            msg = auto_retry(
-                self.bot.send_message,
-                (self.CHANNEL_ID, '<b>收藏序号目录</b>'),
-                dict(parse_mode='HTML'),
-            )
-            auto_retry(
-                self.bot.pin_chat_message,
-                (self.CHANNEL_ID, msg.id),
-            )
+            msg = auto_retry(self.bot.send_message)(self.CHANNEL_ID, '<b>收藏序号目录</b>', parse_mode='HTML')
+            auto_retry(self.bot.pin_chat_message)(self.CHANNEL_ID, msg.id),
             self.CHANNEL_CATALOG_MSG_ID = msg.id
             return msg.id
         else:
@@ -543,13 +517,10 @@ class TelegramUploader:
             parse_mode='HTML',
         ):
         '''编辑消息：将文本补充到消息末尾。'''
-        msg = auto_retry(self.bot.forward_message, (self.DUSTBIN_ID, chat_id, message_id))
-        auto_retry(
-            self.bot.edit_message_text, 
-            (msg.html_text + text, chat_id, message_id), 
-            dict(parse_mode=parse_mode),
-        )
-        auto_retry(self.bot.delete_message, (self.DUSTBIN_ID, msg.id))
+        msg = auto_retry(self.bot.forward_message)(self.DUSTBIN_ID, chat_id, message_id)
+        auto_retry(self.bot.edit_message_text)(
+            msg.html_text + text, chat_id, message_id, parse_mode=parse_mode)
+        auto_retry(self.bot.delete_message)(self.DUSTBIN_ID, msg.id)
     
     
     def get_message_content(
@@ -558,32 +529,18 @@ class TelegramUploader:
             message_id: str | int,
             max_tries = 5,
         ):
-        msg = auto_retry(
-            self.bot.forward_message, 
-            (self.DUSTBIN_ID, chat_id, message_id),
-            max_tries=max_tries,
-        )
-        auto_retry(
-            self.bot.delete_message, 
-            (self.DUSTBIN_ID, msg.id),
-            max_tries=max_tries,
-        )
+        msg = auto_retry(self.bot.forward_message, max_tries=max_tries)(self.DUSTBIN_ID, chat_id, message_id)
+        auto_retry(self.bot.delete_message, max_tries=max_tries)(self.DUSTBIN_ID, msg.id)
         return msg
 
     
     def get_last_uploaded_artwork(self):
         '''寻找并返回最后上传的图片的收藏序号。'''
-        # 发送一个测试消息，测试当前最大的message_id是多少
-        test_msg = auto_retry(self.bot.send_message, (self.CHANNEL_ID, '.'))
-        auto_retry(self.bot.delete_message, (self.CHANNEL_ID, test_msg.id))
-        # 开始从后往前顺序查找最后上传的图片
-        for id in range(test_msg.id-1, 0, -1):
-            try:
-                msg = self.get_message_content(self.CHANNEL_ID, id)
-                mtch = re.findall(r'收藏序号：(\d+)', msg.caption)
-                if mtch:
-                    return int(mtch[0])
-            except:
+        meta_df = pd.read_csv(self.METADATA_FILEPATH)
+        for idx in range(len(meta_df) - 1, -1, -1):
+            if meta_df['channelMessageId'][idx] is None or meta_df['channelMessageId'][idx] < 0:
                 pass
+            else:
+                return meta_df['likeOrder'][idx]
         return None
 

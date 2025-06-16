@@ -2,24 +2,26 @@ import time
 import logging
 import pytz
 from datetime import datetime
+from typing import Optional, Callable
 
 
 def auto_retry(
-        func, 
-        args: tuple = tuple(), 
-        kwargs: dict = dict(), 
-        max_tries = 5,
-        gap_time = 1,
+        func: Optional[Callable] = None,
+        max_tries: int = 5,
+        gap_time: float | int = 1,
     ):
-    err = Exception()
-    for _ in range(max_tries):
-        try:
-            feedback = func(*args, **kwargs)
-            return feedback
-        except Exception as e:
-            err = e
-            time.sleep(gap_time)
-    raise err
+    '''自动重试装饰器。'''
+    def decorator(*args, **kwargs):
+        err = Exception()
+        for _ in range(max_tries):
+            try:
+                feedback = func(*args, **kwargs)
+                return feedback
+            except Exception as e:
+                err = e
+                time.sleep(gap_time)
+        raise err
+    return decorator
 
 
 class P2TLogger:

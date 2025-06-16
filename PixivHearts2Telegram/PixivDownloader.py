@@ -57,10 +57,8 @@ class PixivDownloader:
         for offset in range(0, count, pace):
             collection_url = f"https://www.pixiv.net/ajax/user/{self.USER_ID}/illusts/" + \
                             f"bookmarks?tag=&offset={offset}&limit={pace}&rest=show"
-            resp = auto_retry(
-                requests.get,
-                (collection_url,), 
-                dict(headers=self.HEADERS, timeout=timeout, proxies=self.PROXIES),
+            resp = auto_retry(requests.get)(
+                collection_url, headers=self.HEADERS, timeout=timeout, proxies=self.PROXIES
             ).json()
             datas = resp["body"]["works"]
             bookmark_tags: dict = resp["body"].get("bookmarkTags", dict())
@@ -88,19 +86,15 @@ class PixivDownloader:
                 if str(data['id']) == str(last_previous_pid):
                     if bot and feed_back_msg:
                         feedback_text += f"\n下载完成位置：{image['likeOrder']}"
-                        auto_retry(
-                            bot.edit_message_text,
-                            (feedback_text, feed_back_msg.chat.id, feed_back_msg.id),
-                        )
+                        auto_retry(bot.edit_message_text)(feedback_text, feed_back_msg.chat.id, feed_back_msg.id)
                     break
 
                 if bot and feed_back_msg:
                     if offset + idx <= 0:
                         feedback_text += f"\n下载起始位置：{image['likeOrder']}"
-                    auto_retry(
-                        bot.edit_message_text,
-                        (feedback_text + f"\n当前下载位置：{image['likeOrder']}", 
-                        feed_back_msg.chat.id, feed_back_msg.id),
+                    auto_retry(bot.edit_message_text)(
+                        feedback_text + f"\n当前下载位置：{image['likeOrder']}", 
+                        feed_back_msg.chat.id, feed_back_msg.id,
                     )
 
                 image['pages'], _ = self.download_artwork(
@@ -198,10 +192,9 @@ class PixivDownloader:
         if_already_downloaded = True
 
         # 请求图片详情
-        image_data = auto_retry(
-            requests.get,
-            (f"https://www.pixiv.net/ajax/illust/{illust_id}/pages?lang=zh",),
-            dict(headers=download_headers, timeout=timeout, proxies=self.PROXIES),
+        image_data = auto_retry(requests.get)(
+            f"https://www.pixiv.net/ajax/illust/{illust_id}/pages?lang=zh",
+            headers=download_headers, timeout=timeout, proxies=self.PROXIES,
         ).json()["body"]
 
         pages = []
@@ -215,11 +208,8 @@ class PixivDownloader:
             # 检查图片是否已经下载过，没有下载过就下载
             if not os.path.exists(file_path):
                 if_already_downloaded = False
-                resp = auto_retry(
-                    requests.get,
-                    (download_url,), 
-                    dict(headers=download_headers, timeout=timeout, proxies=self.PROXIES),
-                )
+                resp = auto_retry(requests.get)(
+                    download_url, headers=download_headers, timeout=timeout, proxies=self.PROXIES)
                 with open(file_path, "wb") as file:
                     file.write(resp.content)
                 time.sleep(gap_time)
@@ -245,15 +235,13 @@ class PixivDownloader:
         if os.path.exists(gif_path):
             return f"{illust_id}.gif", True
         
-        ugoira_meta = auto_retry(
-            requests.get,
-            (f"https://www.pixiv.net/ajax/illust/{illust_id}/ugoira_meta",), 
-            dict(headers=download_headers, timeout=timeout, proxies=self.PROXIES),
+        ugoira_meta = auto_retry(requests.get)(
+            f"https://www.pixiv.net/ajax/illust/{illust_id}/ugoira_meta", 
+            headers=download_headers, timeout=timeout, proxies=self.PROXIES,
         ).json()
-        ugoira_zip = auto_retry(
-            requests.get,
-            (ugoira_meta['body']['originalSrc'],), 
-            dict(headers=download_headers, timeout=timeout, proxies=self.PROXIES),
+        ugoira_zip = auto_retry(requests.get)(
+            ugoira_meta['body']['originalSrc'], 
+            headers=download_headers, timeout=timeout, proxies=self.PROXIES,
         )
         
         zip_path = os.path.join(self.SAVE_PATH, f"{illust_id}.zip")
@@ -279,10 +267,9 @@ class PixivDownloader:
 
     def count_collection(self) -> int:
         '''获取收藏总数。'''
-        resp = auto_retry(
-            requests.get,
-            (f"https://www.pixiv.net/ajax/user/{self.USER_ID}/illusts/bookmarks?tag=&offset=0&limit=1&rest=show",),
-            kwargs = dict(headers=self.HEADERS),
+        resp = auto_retry(requests.get)(
+            f"https://www.pixiv.net/ajax/user/{self.USER_ID}/illusts/bookmarks?tag=&offset=0&limit=1&rest=show",
+            headers=self.HEADERS,
         )
         count = resp.json()["body"]["total"]
         return count

@@ -118,10 +118,8 @@ class Tasks:
             likeorder_last_uploaded = 0
         # 上传
         updating_feedback += "\n正在上传……"
-        auto_retry(
-            self.bot.edit_message_text, 
-            (updating_feedback, feed_back_msg.chat.id, feed_back_msg.id),
-        )
+        auto_retry(self.bot.edit_message_text)(updating_feedback, feed_back_msg.chat.id, feed_back_msg.id)
+        
         self.TelegramUploader.upload_artworks(
             start_artwork = likeorder_last_uploaded + 1,
             end_artwork = None,
@@ -144,7 +142,7 @@ class Tasks:
             feedback_text = '已取消，当前有同步任务。'
             print(f'【{self.now_timer.now()}】【手动更新元数据】{feedback_text}')
             for chat_id in feedback_chat_ids:
-                auto_retry(self.bot.send_message, (chat_id, feedback_text))
+                auto_retry(self.bot.send_message)(chat_id, feedback_text)
             return
         
         else:
@@ -187,7 +185,7 @@ class Tasks:
                 feedback_text = '已取消，当前有同步任务。'
             print(f'【{self.now_timer.now()}】【手动更新元数据】{feedback_text}')
             for chat_id in feedback_chat_ids:
-                auto_retry(self.bot.send_message, (chat_id, feedback_text))
+                auto_retry(self.bot.send_message)(chat_id, feedback_text)
             return
         
         else:

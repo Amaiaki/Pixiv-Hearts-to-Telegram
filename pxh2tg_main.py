@@ -70,15 +70,15 @@ def synchronize(message:Message):
     # 同步时终止元数据更新
     tasks.stop_all_metadata_updating()
     # 开始同步
-    msg = auto_retry(bot.send_message, (message.chat.id, "正在同步Pixiv收藏夹……"))
+    msg = auto_retry(bot.send_message)(message.chat.id, "正在同步Pixiv收藏夹……")
     try:
         updating_feedback = tasks.sync_pixiv_collections(msg)
     except Exception as e:
         updating_feedback_msg = tasks.TelegramUploader.get_message_content(msg.chat.id, msg.id)
-        auto_retry(bot.edit_message_text, (updating_feedback_msg.text+"\n同步失败！", msg.chat.id, msg.id))
+        auto_retry(bot.edit_message_text)(updating_feedback_msg.text+"\n同步失败！", msg.chat.id, msg.id)
         raise e
     else:
-        auto_retry(bot.edit_message_text, (updating_feedback, msg.chat.id, msg.id))
+        auto_retry(bot.edit_message_text)(updating_feedback, msg.chat.id, msg.id)
     # 恢复定时元数据更新
     tasks.start_scheduled_metadata_updating()
 
