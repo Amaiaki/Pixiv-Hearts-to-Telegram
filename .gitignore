@@ -5,3 +5,5 @@ test.ipynb
 .archives
 temp
 收藏
+.gitignore
+./PixivHearts2Telegram/__pycache__
