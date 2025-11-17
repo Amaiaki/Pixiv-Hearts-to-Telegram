@@ -1,0 +1,23 @@
+timezone = 'Asia/Shanghai'
+logFile = './log/px2tg.log'
+
+[pixiv]
+userID = 100000000 # Pixiv user ID              #修改这里
+headers.User-Agent = 'User-Agent'               #修改这里
+headers.Cookie = 'Cookie'                       #修改这里
+
+[telegram]
+botToken = 'BOT_TOKEN_HERE'                     #修改这里
+localApiServerURL = 'http://localhost:8081/'    #按需修改，或改为 null 以使用官方服务器
+allowedUsers = [123456789]                      #修改这里
+# channelCatalogMsgID = 3 #启动后会自动生成
+[telegram.archiveChatIDs]
+channel = -1001234567890                        #修改这里
+group = -1009876543210                          #修改这里
+dustbin = -1001122334455                        #修改这里
+
+[paths]
+artworkSave = './我的Pixiv公开收藏夹'
+metadataFile = './metadata.json'
+recordsFile = './records.csv'
+err404Picture = './pixiv404.png'
