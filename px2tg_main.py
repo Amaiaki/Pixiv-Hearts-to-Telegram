@@ -111,7 +111,7 @@ def cancelAllTasks(message: Message):
 @bot.message_handler(commands=['start', 'sync', 'input', 'modify'], 
     func=lambda msg: int(msg.from_user.id) not in ALLOWED_TELEGRAM_USERS)
 def handleRestrictedMessage(message:Message):
-    autoRetry(bot.send_message)(message.chat.id, "你没有权限使用这个机器人。")
+    bot.send_message(message.chat.id, "你没有权限使用这个机器人。")
     logger.warning("【禁止访客】已禁止无权限访问者: tg://user?id=%d", message.chat.id)
 
 

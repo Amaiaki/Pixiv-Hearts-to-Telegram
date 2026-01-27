@@ -385,7 +385,7 @@ class Syncher:
             # 反馈消息
             for msg in feedback_messages:
                 feedback_text += f"\n<code>{illust_id}</code> " +\
-                    f"{'存活' if new_existence else '被删除'}"
+                    f"{'活了' if new_existence else '死了'}"
                 autoRetry(self.bot.edit_message_text)(
                     feedback_text, msg.chat.id, msg.id, parse_mode='HTML')
             time.sleep(gap_time)
