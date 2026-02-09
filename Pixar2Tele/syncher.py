@@ -127,7 +127,7 @@ class Syncher:
                 rest='show', timeout=timeout)
             artwork_infos.reverse()
             # 获取起始作品的序号，用在起始反馈信息中
-            if offset == start_offset:
+            if not progress and artwork_infos:
                 if artwork_infos[0]['id'] not in records_df.index:
                     if len(records_df) <= 0: first_artwork_syncno = 1
                     else: first_artwork_syncno = records_df.iloc[-1]['syncNo'] + 1
