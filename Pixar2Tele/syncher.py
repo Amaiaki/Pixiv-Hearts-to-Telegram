@@ -49,7 +49,7 @@ class Syncher:
     def __init__(
             self,
             bot: TeleBot,
-            local_api_server_url: str,
+            custom_api_server_url: str,
             pixiv_user_id: int,
             channel_id: int,
             group_id: int,
@@ -87,7 +87,7 @@ class Syncher:
             bot=bot, 
             dustbin_id=dustbin_id, 
             temp_path=self.TEMP_PATH, 
-            local_api_server_url=local_api_server_url,
+            custom_api_server_url=custom_api_server_url,
         )
 
         self.getChannelCatalogID()

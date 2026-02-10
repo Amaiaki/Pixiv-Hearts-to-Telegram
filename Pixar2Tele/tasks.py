@@ -50,7 +50,7 @@ class Tasks:
     def __init__(
             self,
             bot: TeleBot,
-            local_api_server_url: str,
+            custom_api_server_url: str,
             allowed_telegram_users: list[str | int],
             pixiv_user_id: int,
             channel_id: int,
@@ -75,7 +75,7 @@ class Tasks:
 
         self.Syncher = Syncher(
             bot = bot,
-            local_api_server_url=local_api_server_url,
+            custom_api_server_url=custom_api_server_url,
             pixiv_user_id = pixiv_user_id,
             channel_id = channel_id,
             group_id = group_id,

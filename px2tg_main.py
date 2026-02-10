@@ -28,7 +28,7 @@ with open('config.toml', 'r+t') as f:
     # 设置任务，并初始化
     tasks = Tasks(
         bot = bot,
-        local_api_server_url = config['telegram']['localApiServerURL'],
+        custom_api_server_url = config['telegram']['customApiServerURL'],
         allowed_telegram_users = config['telegram']['allowedUsers'],
         pixiv_user_id = config['pixiv']['userID'],
         channel_id = config['telegram']['archiveChatIDs']['channel'],

@@ -23,22 +23,22 @@ class TelegramTools:
             bot: TeleBot,
             dustbin_id: int,
             temp_path: str,
-            local_api_server_url: str = None,
+            custom_api_server_url: str = None,
         ):
         self.bot = bot
 
         self.DUSTBIN_ID = dustbin_id
         self.TEMP_PATH = temp_path
-        self.LOCAL_API_SERVER_URL = local_api_server_url
+        self.CUSTOM_API_SERVER_URL = custom_api_server_url
         self.MAX_PHOTO_DIM = 2160
         self.MAX_PHOTO_FILE_SIZE = 8 * 1000 * 1000
 
         if not os.path.exists(temp_path): os.mkdir(temp_path)
 
         # 使用本地 API 服务器
-        if isinstance(local_api_server_url, str) and local_api_server_url:
-            apihelper.API_URL = os.path.join(local_api_server_url, "bot{0}/{1}")
-            apihelper.FILE_URL = os.path.join(local_api_server_url, "file/bot{0}/{1}")
+        if isinstance(custom_api_server_url, str) and custom_api_server_url:
+            apihelper.API_URL = os.path.join(custom_api_server_url, "bot{0}/{1}")
+            apihelper.FILE_URL = os.path.join(custom_api_server_url, "file/bot{0}/{1}")
             self.MAX_DOCUMENT_SIZE = 2000 * 1000 * 1000
         # 使用官方 API 服务器
         else:
@@ -193,16 +193,9 @@ class TelegramTools:
         ):
         file_info = self.bot.get_file(message.document.file_id)
         file_name = f"{file_stem}{os.path.splitext(message.document.file_name)[-1]}"
-        # 使用本地API
-        if self.USE_LOCAL_API_SERVER:
-            file_path = self.replacePrefix(file_info.file_path, 
-                '/var/lib/telegram-bot-api', '/cih/.docker/telegram-bot-api/data')
-            os.rename(file_path, os.path.join(save_path, file_name))
-        # 使用官方API
-        else:
-            downloaded_file = self.bot.download_file(file_info.file_path)
-            with open(os.path.join(save_path, file_name), 'wb') as new_file:
-                new_file.write(downloaded_file)
+        downloaded_file = self.bot.download_file(file_info.file_path)
+        with open(os.path.join(save_path, file_name), 'wb') as new_file:
+            new_file.write(downloaded_file)
         return file_name
 
 
