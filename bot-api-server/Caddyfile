@@ -1,0 +1,20 @@
+{
+    admin off
+}
+
+:80 {
+    # 匹配 /file/bot12345... 并改写为 /file/12345...
+    @botpath path_regexp bot ^/file/bot(.*)$
+    rewrite @botpath /file/{re.bot.1}
+    
+    # /file 路径下启用静态文件服务
+    handle_path /file* {
+        root * /file
+        file_server
+    }
+
+    # 其他路径反代到后端服务
+    handle {
+        reverse_proxy telegram-bot-api:8081
+    }
+}

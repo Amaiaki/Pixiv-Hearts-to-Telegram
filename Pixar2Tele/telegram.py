@@ -35,7 +35,7 @@ class TelegramTools:
 
         if not os.path.exists(temp_path): os.mkdir(temp_path)
 
-        # 使用本地 API 服务器
+        # 使用自定义 API 服务器
         if isinstance(custom_api_server_url, str) and custom_api_server_url:
             apihelper.API_URL = os.path.join(custom_api_server_url, "bot{0}/{1}")
             apihelper.FILE_URL = os.path.join(custom_api_server_url, "file/bot{0}/{1}")
