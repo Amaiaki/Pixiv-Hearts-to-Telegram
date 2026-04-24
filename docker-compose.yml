@@ -1,0 +1,41 @@
+services:
+  px2tg:
+    build: .
+    container_name: px2tg
+    restart: unless-stopped
+    depends_on:
+      - caddy
+    volumes:
+      - ./config.toml:/app/config.toml
+      - ./metadata:/app/metadata
+      - ./log:/app/log
+      - ./temp:/app/temp
+      - ./我的Pixiv公开收藏夹:/app/我的Pixiv公开收藏夹
+
+  telegram-bot-api:
+    image: aiogram/telegram-bot-api:latest
+    container_name: telegram-bot-api
+    restart: unless-stopped
+    volumes:
+      - ./bot-api-server/tg-data:/var/lib/telegram-bot-api
+    environment:
+      - TELEGRAM_API_ID=${TELEGRAM_API_ID}
+      - TELEGRAM_API_HASH=${TELEGRAM_API_HASH}
+
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    restart: unless-stopped
+    depends_on:
+      - telegram-bot-api
+    volumes:
+      - ./bot-api-server/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./bot-api-server/tg-data:/file
+      - caddy_data:/data
+      - caddy_config:/config
+    # ports:
+    #   - 127.0.0.1:8081:80
+
+volumes:
+  caddy_data:
+  caddy_config:

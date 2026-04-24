@@ -67,7 +67,7 @@ p2t_logging.filterKeywords(exclude_keywords=[
 @bot.message_handler(commands=['start'], 
     func=lambda msg: int(msg.from_user.id) in ALLOWED_TELEGRAM_USERS)
 def showHelpInfo(message:Message):
-    logger.info("【用法提示】请求来自：tg://user?id=%d", message.chat.id)
+    logger.info("[用法提示] 请求来自：tg://user?id=%d", message.chat.id)
     autoRetry(bot.send_message)(message.chat.id, parse_mode='HTML',
         text="<code>/start</code>\n<blockquote>开启对话，查看命令用法。</blockquote>\n" +\
             "<code>/sync</code>\n<blockquote>命令式（触发式）同步 Pixiv 收藏夹。</blockquote>" +\
@@ -81,28 +81,28 @@ def showHelpInfo(message:Message):
     func=lambda msg: int(msg.from_user.id) in ALLOWED_TELEGRAM_USERS)
 def syncByTriggered(message: Message):
     '''触发式/命令式同步Pixiv收藏夹，无参数。'''
-    logger.info("【触发式同步】请求来自：tg://user?id=%d", message.chat.id)
+    logger.info("[触发式同步] 请求来自：tg://user?id=%d", message.chat.id)
     tasks.startTriggeredSync(feedback_chat_ids=[message.chat.id])
 
 
 @bot.message_handler(commands=['input'], 
     func=lambda msg: int(msg.from_user.id) in ALLOWED_TELEGRAM_USERS)
 def manuallyInputArtwork(message: Message):
-    logger.info("【手动输入作品】请求来自：tg://user?id=%d", message.chat.id)
+    logger.info("[手动输入作品] 请求来自：tg://user?id=%d", message.chat.id)
     tasks.manuallyInputArtwork(message)
 
 
 @bot.message_handler(commands=['modify'], 
     func=lambda msg: int(msg.from_user.id) in ALLOWED_TELEGRAM_USERS)
 def manuallyModifyArtwork(message: Message):
-    logger.info("【手动修改作品】请求来自：tg://user?id=%d", message.chat.id)
+    logger.info("[手动修改作品] 请求来自：tg://user?id=%d", message.chat.id)
     tasks.manuallyModifyArtwork(message)
 
 
 @bot.message_handler(commands=['cancel'], 
     func=lambda msg: int(msg.from_user.id) in ALLOWED_TELEGRAM_USERS)
 def cancelAllTasks(message: Message):
-    logger.info("【取消当前所有任务】请求来自：tg://user?id=%d", message.chat.id)
+    logger.info("[取消当前所有任务] 请求来自：tg://user?id=%d", message.chat.id)
     tasks.stopAllTasks()
     tasks.startScheduledTasks()
     autoRetry(bot.send_message)(message.chat.id, "✅ 已取消当前所有任务。")
@@ -112,7 +112,7 @@ def cancelAllTasks(message: Message):
     func=lambda msg: int(msg.from_user.id) not in ALLOWED_TELEGRAM_USERS)
 def handleRestrictedMessage(message:Message):
     bot.send_message(message.chat.id, "你没有权限使用这个机器人。")
-    logger.warning("【禁止访客】已禁止无权限访问者: tg://user?id=%d", message.chat.id)
+    logger.warning("[禁止访客] 已禁止无权限访问者: tg://user?id=%d", message.chat.id)
 
 
 logger.info("启动 Bot: Pixiv Hearts to Telegram")

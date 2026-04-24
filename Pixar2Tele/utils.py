@@ -49,7 +49,7 @@ class P2TLogging:
             formatter: logging.Formatter = None,
             log_file_path: str = None,
             timezone = 'Asia/Shanghai',
-            max_bytes = 1 * 1024 * 1024,
+            max_bytes = 64 * 1024,
             backup_count = 5,
         ):
         self.logger_name = 'Pixar2Tele'

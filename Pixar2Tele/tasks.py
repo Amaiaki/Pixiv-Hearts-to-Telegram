@@ -159,14 +159,14 @@ class Tasks:
                     chat_id, '已取消本次同步任务，因为当前有触发同步任务。')
             return False
         # 开始同步
-        self.logger.info("【定时同步】启动定时同步任务。")
+        self.logger.info("[定时同步] 启动定时同步任务。")
         logIfError(self.logger, self.syncTask)(
             self.event_stop_scheduled_tasks, feedback_chat_ids)
-        self.logger.info("【定时同步】定时同步任务完成。")
+        self.logger.info("[定时同步] 定时同步任务完成。")
     
 
     def removeOutDatedFiles(self, dir: str, time2live: float, stop_event: Event = None):
-        self.logger.info(f"【清理过期文件】正在清理目录 \"{dir}\" 下创建时间大于 {time2live}s 的文件。")
+        self.logger.info(f"[清理过期文件] 正在清理目录 \"{dir}\" 下创建时间大于 {time2live}s 的文件。")
         now = time.time()
         out_dated_time = now - time2live
         # 遍历文件夹中的所有文件
@@ -179,15 +179,15 @@ class Tasks:
                 file_ctime = os.path.getctime(file_path)
                 # 如果文件修改时间早于过期时间，则删除
                 if file_ctime < out_dated_time: os.remove(file_path)
-        self.logger.info(f"【清理过期文件】目录 \"{dir}\" 清理完成。")
+        self.logger.info(f"[清理过期文件] 目录 \"{dir}\" 清理完成。")
     
 
     def syncByTriggered(self, feedback_chat_ids: list[int|str]):
         self.is_synchronizing_by_triggered = True
-        self.logger.info("【触发式同步】启动触发式同步任务。")
+        self.logger.info("[触发式同步] 启动触发式同步任务。")
         logIfError(self.logger, self.syncTask)(
             self.event_stop_triggered_synchronizing, feedback_chat_ids)
-        self.logger.info("【触发式同步】触发式同步任务完成。")
+        self.logger.info("[触发式同步] 触发式同步任务完成。")
         self.is_synchronizing_by_triggered = False
     
 
@@ -272,7 +272,7 @@ class Tasks:
         def processMeta(message: Message):
             try: info = dict(tomlkit.loads(message.text))
             except Exception as e:
-                self.logger.warning(f"【手动输入作品】元数据无法解析为 Toml 格式：\n{message.text}\n报错：{e}")
+                self.logger.warning(f"[手动输入作品] 元数据无法解析为 Toml 格式：\n{message.text}\n报错：{e}")
                 autoRetry(self.bot.send_message)(chat_id=message.chat.id, parse_mode='HTML',
                     text=f"❗元数据不是 Toml 格式，作品输入取消。")
                 self.manual_artwork_info = None
@@ -390,7 +390,7 @@ class Tasks:
                     self.Teleg.downloadFile(message, self.SAVE_PATH, file_stem)
                 )
             except Exception as e:
-                self.logger.error(f"【手动输入作品】原图下载失败：{artwork_id}_p{part_no}")
+                self.logger.error(f"[手动输入作品] 原图下载失败：{artwork_id}_p{part_no}")
                 autoRetry(self.bot.send_message)(message.chat.id, "❗原图下载失败，此次输入取消。")
                 self.manual_artwork_info = None
                 raise e
@@ -466,7 +466,7 @@ class Tasks:
         def processMeta(message: Message):
             try: info = dict(tomlkit.loads(message.text))
             except Exception as e:
-                self.logger.warning(f"【手动修改作品】元数据无法解析为 Toml 格式：\n{message.text}\n报错：{e}")
+                self.logger.warning(f"[手动修改作品] 元数据无法解析为 Toml 格式：\n{message.text}\n报错：{e}")
                 autoRetry(self.bot.send_message)(chat_id=message.chat.id, parse_mode='HTML',
                     text=f"❗元数据不是 Toml 格式，作品修改取消。")
                 self.manual_artwork_info = None
@@ -569,7 +569,7 @@ class Tasks:
                     f"{artwork_id}_v{version}" if is_gif else f"{artwork_id}_p{part_no}_v{version}")
                 )
             except Exception as e:
-                self.logger.error(f"【手动修改作品】原图下载失败：{artwork_id}_p{part_no}")
+                self.logger.error(f"[手动修改作品] 原图下载失败：{artwork_id}_p{part_no}")
                 autoRetry(self.bot.send_message)(message.chat.id, "❗原图下载失败，此次修改取消。")
                 self.manual_artwork_info = None
                 raise e

@@ -3,7 +3,9 @@ bot-api-server/tg-data/
 bot-api-server/docker-compose.yml
 log/
 temp/
+metadata/
+.vscode/
+Pixar2Tele/__pycache__/
 config.toml
-metadata.json
-records.csv
 test.ipynb
+.env

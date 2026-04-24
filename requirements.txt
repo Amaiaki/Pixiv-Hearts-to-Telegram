@@ -1,0 +1,8 @@
+pytelegrambotapi==4.27.0
+requests==2.32.3
+schedule==1.2.2
+pandas==2.2.3
+pillow==11.1.0
+imageio==2.37.0
+tomlkit==0.13.2
+pytz==2024.1
