@@ -1,7 +1,7 @@
 services:
-  px2tg:
+  pixar2tele:
     build: .
-    container_name: px2tg
+    container_name: pixar2tele
     restart: unless-stopped
     depends_on:
       - caddy
