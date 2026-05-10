@@ -10,7 +10,6 @@ headers.Cookie = 'Cookie'                       #修改这里
 botToken = 'BOT_TOKEN_HERE'                     #修改这里
 customApiServerURL = 'http://caddy:80/'         #Docker 内部地址；宿主机直连改为 'http://localhost:8081/'；使用官方服务器改为 null
 allowedUsers = [123456789]                      #修改这里
-# channelCatalogMsgID = 3 #启动后会自动生成
 [telegram.archiveChatIDs]
 channel = -1001234567890                        #修改这里
 group = -1009876543210                          #修改这里

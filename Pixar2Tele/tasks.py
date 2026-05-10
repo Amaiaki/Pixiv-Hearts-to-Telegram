@@ -56,7 +56,6 @@ class Tasks:
             channel_id: int,
             group_id: int,
             dustbin_id: int,
-            channel_catalog_msg_id: int,
             metadata_file_path: str,
             records_file_path: str,
             err404_cover_file_path: str,
@@ -80,7 +79,6 @@ class Tasks:
             channel_id = channel_id,
             group_id = group_id,
             dustbin_id = dustbin_id,
-            channel_catalog_msg_id = channel_catalog_msg_id,
             metadata_file_path = metadata_file_path,
             records_file_path = records_file_path,
             err404_cover_file_path = err404_cover_file_path,
@@ -91,7 +89,6 @@ class Tasks:
         )
         self.Pixiv = self.Syncher.Pixiv
         self.Teleg = self.Syncher.Teleg
-        self.getChannelCatalogID = self.Syncher.getChannelCatalogID
         
         # 任务事件终止标志
         self.event_stop_triggered_synchronizing = threading.Event()

@@ -1,5 +1,4 @@
 import os
-import re
 import time
 import json
 import logging
@@ -54,7 +53,6 @@ class Syncher:
             channel_id: int,
             group_id: int,
             dustbin_id: int,
-            channel_catalog_msg_id: int,
             metadata_file_path: str,
             records_file_path: str,
             err404_cover_file_path: str,
@@ -68,7 +66,6 @@ class Syncher:
         self.DUSTBIN_ID = dustbin_id
         self.CHANNEL_ID = channel_id
         self.GROUP_ID = group_id
-        self.CHANNEL_CATALOG_MSG_ID = channel_catalog_msg_id
         self.METADATA_FILE_PATH = metadata_file_path
         self.RECORDS_FILE_PATH = records_file_path
         self.ERR404_PHOTO_FILE_PATH = err404_cover_file_path
@@ -89,8 +86,6 @@ class Syncher:
             temp_path=self.TEMP_PATH, 
             custom_api_server_url=custom_api_server_url,
         )
-
-        self.getChannelCatalogID()
 
         # 日志
         self.logger = logging.getLogger('Pixar2Tele')
@@ -160,9 +155,6 @@ class Syncher:
                             'syncNo': int(syncno), 'id': str(artwork['id']),
                             'existence': bool(artwork['existence']),
                         })
-                        # 更新频道置顶目录
-                        if (syncno - 1) % 20 == 0:
-                            self.updateChannelCatalog(syncno, artwork['channelMessageId'])
                     
                     # 如果作品被同步过，检查更新，不会更新存活状态
                     # BUG: 更新失败不能保存元数据
@@ -275,9 +267,6 @@ class Syncher:
             'syncNo': int(syncno), 'id': str(artwork_info['id']),
             'existence': bool(artwork_info['existence']),
         })
-        # 更新频道置顶目录
-        if (syncno - 1) % 20 == 0:
-            self.updateChannelCatalog(syncno, artwork_info['channelMessageId'])
         # 保存元数据和同步记录
         self.saveMetaAndRecords(meta_dict, records_df)
         # 成功
@@ -537,37 +526,6 @@ class Syncher:
             raise e
         
         return channel_cover_msg_id, group_cover_msg_id, group_document_msg_ids
-    
-
-    def getChannelCatalogID(self) -> int:
-        '''
-        获取频道目录的消息ID，如果不存在，则创建一个目录消息。
-        '''
-        if self.CHANNEL_CATALOG_MSG_ID is None:
-            msg = autoRetry(self.bot.send_message)(
-                self.CHANNEL_ID, '<b>收藏序号目录</b>', parse_mode='HTML')
-            autoRetry(self.bot.pin_chat_message)(self.CHANNEL_ID, msg.id),
-            self.CHANNEL_CATALOG_MSG_ID = msg.id
-        return self.CHANNEL_CATALOG_MSG_ID
-    
-
-    def updateChannelCatalog(self, syncno, channel_msg_id):
-        if self.CHANNEL_CATALOG_MSG_ID is None: raise ValueError(f'频道目录消息不存在。')
-        # 获取频道目录内容
-        msg = self.Teleg.getMessageContent(self.CHANNEL_ID, self.CHANNEL_CATALOG_MSG_ID)
-        # 分割内容为：标题 + 链接1 + 链接2 + ……
-        catalog_components = msg.html_text.splitlines()
-        title = catalog_components[0]
-        # 创建新链接，加入目录中
-        new_link = f'[<a href="https://t.me/c/{str(self.CHANNEL_ID)[4:]}/' +\
-            f'{channel_msg_id}">{syncno:06d}</a>]'
-        links = catalog_components[1:] + [new_link]
-        links.sort(key = lambda link : re.search(r'<a href="[^"]+">(\d+)</a>', link).group(1))
-        # 更新目录
-        autoRetry(self.bot.edit_message_text)(
-            f"{title}\n{'\n'.join(links)}",
-            self.CHANNEL_ID, self.CHANNEL_CATALOG_MSG_ID, parse_mode='HTML',
-        )
 
 
     def genCaption(
@@ -582,7 +540,7 @@ class Syncher:
         createDate = datetime.fromisoformat(createDate)
         updateDate = datetime.fromisoformat(updateDate)
         caption = \
-            f"序号：{syncno}\n" +\
+            f"序号：#SYNC_{syncno}\n" +\
             f"收藏标签：{escape('#'+' #'.join(bookmarkTags))}\n\n" +\
             f"标题：{escape(str(title))}\n" +\
             f"作品ID：<code>{id}</code>{' (#ERR404)' if not existence else ''}\n" +\

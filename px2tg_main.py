@@ -34,7 +34,6 @@ with open('config.toml', 'r+t') as f:
         channel_id = config['telegram']['archiveChatIDs']['channel'],
         group_id = config['telegram']['archiveChatIDs']['group'],
         dustbin_id = config['telegram']['archiveChatIDs']['dustbin'],
-        channel_catalog_msg_id = config['telegram'].get('channelCatalogMsgID', None),
         metadata_file_path = config['paths']['metadataFile'],
         records_file_path = config['paths']['recordsFile'],
         err404_cover_file_path = config['paths']['err404Picture'],
@@ -44,13 +43,6 @@ with open('config.toml', 'r+t') as f:
         proxies = None,
         timezone = timezone,
     )
-    channel_catalog_msg_id = tasks.getChannelCatalogID()
-    # 如果没有频道目录，则已经自动创建，需要保存到配置中
-    if 'channel_catalog_msg_id' not in config['telegram']:
-        config['telegram']['channelCatalogMsgID'] = channel_catalog_msg_id
-        f.seek(0)
-        f.write(config.as_string())
-        f.truncate()
 
 
 logger = p2t_logging.getLogger()
