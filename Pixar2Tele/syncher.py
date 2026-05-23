@@ -191,17 +191,20 @@ class Syncher:
             
             except Exception as e:
                 self.saveMetaAndRecords(meta_dict, records_df)
-                raise e
+                raise RuntimeError(f"同步出错，当前作品：{artwork['id']}\n原始报错：{e}")
             
             # bot反馈
-            for msg in feedback_messages:
-                curr_feedback_text = feedback_text +\
-                    f"\n当前序号：{records_df['syncNo'][artwork_infos[-1]['id']]}" +\
-                    f"\n进度：{100 * progress / num_sync :.2f}%"
-                autoRetry(self.bot.edit_message_text)(
-                    curr_feedback_text, msg.chat.id, msg.id, parse_mode='HTML')
+            try:
+                for msg in feedback_messages:
+                    curr_feedback_text = feedback_text +\
+                        f"\n当前序号：{records_df['syncNo'][artwork_infos[-1]['id']]}" +\
+                        f"\n进度：{100 * progress / num_sync :.2f}%"
+                    autoRetry(self.bot.edit_message_text)(
+                        curr_feedback_text, msg.chat.id, msg.id, parse_mode='HTML')
+            except Exception as e:
+                raise RuntimeError(f"反馈消息更新出错，当前消息内容：{curr_feedback_text}\n原始报错：{e}")
             # 保存元数据和同步记录
-            self.saveMetaAndRecords(meta_dict, records_df)
+            finally: self.saveMetaAndRecords(meta_dict, records_df)
         
         # 更新作品存活状态
         meta_dict, records_df, curr_feedback_text = self.updateExistences(
@@ -441,18 +444,31 @@ class Syncher:
                 caption=self.genCaption(syncno, **artwork_info), parse_mode='HTML',
                 photo_path=cover_path,
             )
-        except: raise MessageSendingFailed(
-            f"频道消息更新出错，消息id ({artwork_info['channelMessageId']})。")
+        except Exception as e:
+            raise MessageSendingFailed(
+                f"频道消息更新出错，"
+                f"chat_id ({self.CHANNEL_ID})，"
+                f"消息id ({artwork_info['channelMessageId']})。"
+                f"\n原始报错：{e}"
+            )
 
         # 重新上传图片文件
         if need_reupload:
             group_document_msg_ids = []
             for page in artwork_info['pages']:
-                group_document_msg_ids += self.Teleg.sendFile(
-                    file_path=os.path.join(self.SAVE_PATH, page), 
-                    chat_id=self.GROUP_ID, reply_to_msg_id=artwork_info['groupMessageId'],
-                    gap_time_for_sending_zip_volumes=doc_uploading_gap_time,
-                )
+                try:
+                    group_document_msg_ids += self.Teleg.sendFile(
+                        file_path=os.path.join(self.SAVE_PATH, page),
+                        chat_id=self.GROUP_ID, reply_to_msg_id=artwork_info['groupMessageId'],
+                        gap_time_for_sending_zip_volumes=doc_uploading_gap_time,
+                    )
+                except Exception as e:
+                    raise MessageSendingFailed(
+                        f"文件上传出错，"
+                        f"chat_id ({self.GROUP_ID})，"
+                        f"消息id ({artwork_info['channelMessageId']})。"
+                        f"\n原始报错：{e}"
+                    )
                 time.sleep(doc_uploading_gap_time)
             return group_document_msg_ids
         else: return artwork_info['groupDocumentMessageIds']
@@ -579,6 +595,5 @@ class Syncher:
     def isArtworkRecorded(self, artwork_id):
         _, records_df = self.getMetaAndRecords()
         return artwork_id in records_df['id']
-
 
 
