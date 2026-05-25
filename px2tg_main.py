@@ -100,7 +100,7 @@ def cancelAllTasks(message: Message):
     autoRetry(bot.send_message)(message.chat.id, "✅ 已取消当前所有任务。")
 
 
-@bot.message_handler(commands=['start', 'sync', 'input', 'modify'], 
+@bot.message_handler(commands=['start', 'sync', 'input', 'modify', 'cancel'], 
     func=lambda msg: int(msg.from_user.id) not in ALLOWED_TELEGRAM_USERS)
 def handleRestrictedMessage(message:Message):
     bot.send_message(message.chat.id, "你没有权限使用这个机器人。")
